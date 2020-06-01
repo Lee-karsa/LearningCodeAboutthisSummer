@@ -1,0 +1,80 @@
+import requests
+from bs4 import BeautifulSoup
+import bs4
+from tkinter import *
+import tkinter as tk
+
+
+def get_url(url):#获得网页内容
+    try:
+        r = requests.get(url , timeout = 30)#获得url的相关参数
+        r.raise_for_status()
+        r.encoding = r.apparent_encoding
+        return r.text#返还url的内容
+    except:
+        return "网页爬取异常" + r.status_code#返回状态码
+
+def explain_url(url , list):#获得url的内容，并解析在一个二维列表当中
+    soup = BeautifulSoup(url, "html.parser")#解释
+    for tr in soup.find('tbody').children:#查看网页的源代码，发现每个tbody下面有tr个分支，每个tr分支下td是他的儿子，所以遍历
+        if isinstance(tr, bs4.element.Tag):#判断tr下是否是bs4的类型
+            tds = tr('td')#查询tr下所有的td标签
+            list.append([tds[0].string, tds[1].string, tds[2].string, tds[3].string, tds[4].string])#将爬下的数据写到一个二维数据列表当中
+    return list
+
+def store_content(list , name):#输出储存的内容
+    static = ""
+    for i in ulist:
+        for j in i:
+            if name in i:
+                static += "{:^15}\t{:^15}\t{:^15}\t{:^15}\t{:^15}\n".format(i[0], i[1], i[2], i[3], i[4])#给二维列表赋
+                break
+    return static  #
+
+def window(list):
+    root = Tk()
+    root.title("2019年全国高校排名查询窗口")
+
+    group1 = Label(root, text="2019年全国高校排名（排名范围是教育部公布的全国普通高等学校名单中，"
+                              "1243所办学层次为本科的大学。\n"
+                              "这其中公办大学826所、民办大学153所、独立学院264所。）"
+                              "\n\n输入你想查询的学校名称，或者省份")
+    group1.pack(padx = 5 , pady = 0)
+
+    e = tk.Entry(root,show=None)
+    e.pack(padx = 300 , pady =8)
+
+    def insert_point():
+        var = e.get()
+        temp = store_content(list , var)
+        t.insert('insert',temp)
+
+    b1 = tk.Button(root, text='查询', width=9,
+               height=1, command=insert_point)
+    b1.pack()
+
+    group2 = Label(root, text="-----------------------------查询结果如下"
+                              "-----------------------------",font=(35), fg="green")
+    group2.pack(padx=5, pady=10)
+    group21 = Label(root, text="{:^10}\t{:^11}\t{:^11}\t{:^11}\t{:^10}".format("排名",
+                                                                               "学校名称",
+                                                                               "省份",
+                                                                               "总分",
+                                                                               "生源质量"),font=("黑体", 12))
+    group21.pack(padx=5, pady=10)
+
+    t = tk.Text(root, width=90, height=20, font = ("黑体",12))
+    t.pack()
+
+    group3 = Label(root)
+    group3.pack(padx = 3 , pady = 0)
+
+    mainloop(  )
+
+if __name__ == '__main__':
+    ulist = []
+    url = "http://www.zuihaodaxue.cn/zuihaodaxuepaiming2019.html"
+    first = get_url(url)
+    second = explain_url(first, ulist)
+    third = window(ulist)
+    pass
